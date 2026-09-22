@@ -1,0 +1,15 @@
+name = "naya-andaz-salon"
+main = "src/index.js"
+compatibility_date = "2025-06-01"
+
+[assets]
+directory = "./public"
+binding = "ASSETS"
+
+[vars]
+SLOT_CAPACITY = "2"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "naya-andaz-salon"
+database_id = "8794b0bf-f3c1-4990-8910-a2723d1cde8a"

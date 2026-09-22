@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex">
+<title>Salon Admin — Naya Andaz</title>
+<link href="https://fonts.googleapis.com/css2?family=Mukta:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{ --black:#111; --off:#f6f5f2; --grey:#8a8a85; --line:#e7e5df; --gold:#c99a3d; }
+  *{ box-sizing:border-box; }
+  body{ margin:0; background:var(--off); color:var(--black); font-family:'Mukta',sans-serif; line-height:1.6; }
+  .wrap{ max-width:1080px; margin:0 auto; padding:28px; }
+  header{ background:var(--black); color:#fff; }
+  header .wrap{ display:flex; justify-content:space-between; align-items:center; gap:14px; flex-wrap:wrap; padding:18px 28px; }
+  header b{ font-size:1.1rem; }
+  input, select, button, textarea{ font-family:'Mukta',sans-serif; font-size:0.95rem; }
+  input, select{ padding:10px 12px; border-radius:10px; border:1.5px solid var(--line); background:#fff; }
+  button{ padding:10px 16px; border-radius:10px; border:none; background:var(--black); color:#fff; font-weight:700; cursor:pointer; }
+  button.ghost{ background:#fff; color:var(--black); border:1.5px solid var(--line); }
+  button:disabled{ opacity:0.5; cursor:not-allowed; }
+  .card{ background:#fff; border-radius:20px; padding:22px; box-shadow:0 2px 14px rgba(17,17,17,0.06); margin-bottom:20px; }
+  h2{ font-size:1.15rem; margin:0 0 14px; }
+  table{ width:100%; border-collapse:collapse; font-size:0.9rem; }
+  th, td{ text-align:left; padding:10px 8px; border-bottom:1px solid var(--line); vertical-align:top; }
+  th{ font-size:0.78rem; text-transform:uppercase; letter-spacing:0.04em; color:var(--grey); }
+  .pill{ display:inline-block; padding:3px 10px; border-radius:100px; font-size:0.76rem; font-weight:700; background:var(--off); }
+  .pill.pending{ background:#fff4d6; color:#8a6300; }
+  .pill.confirmed{ background:#d9f2e4; color:#1c7a4b; }
+  .pill.done{ background:#e2e8f5; color:#2f4f8f; }
+  .pill.cancelled{ background:#fadede; color:#a33; }
+  .row-actions{ display:flex; gap:6px; flex-wrap:wrap; }
+  .row-actions button{ padding:6px 10px; font-size:0.8rem; }
+  .stats{ display:flex; gap:10px; flex-wrap:wrap; margin-bottom:16px; }
+  .stat{ background:var(--off); border-radius:14px; padding:10px 16px; font-size:0.86rem; }
+  .stat b{ display:block; font-size:1.3rem; }
+  .login{ max-width:420px; margin:70px auto; }
+  .hidden{ display:none; }
+  .msg{ font-size:0.88rem; font-weight:600; margin-top:10px; }
+  .msg.err{ color:#b23b3b; }
+  .toolbar{ display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-bottom:14px; }
+  .stars{ color:var(--gold); letter-spacing:2px; }
+</style>
+</head>
+<body>
+
+<header><div class="wrap">
+  <b>💈 Naya Andaz Salon — Admin</b>
+  <button class="ghost hidden" id="logoutBtn">Logout</button>
+</div></header>
+
+<div class="wrap login" id="loginView">
+  <div class="card">
+    <h2>Admin Login</h2>
+    <p style="color:var(--grey); font-size:0.9rem; margin-top:0;">Wahi token daaliye jo aapne <code>ADMIN_TOKEN</code> secret mein set kiya tha.</p>
+    <input type="password" id="tokenInput" placeholder="Admin token" style="width:100%; margin-bottom:12px;">
+    <button id="loginBtn" style="width:100%;">Login</button>
+    <div class="msg err hidden" id="loginMsg"></div>
+  </div>
+</div>
+
+<main class="wrap hidden" id="appView">
+  <div class="card">
+    <h2>Bookings</h2>
+    <div class="stats" id="bookingStats"></div>
+    <div class="toolbar">
+      <select id="statusFilter">
+        <option value="">Sabhi</option>
+        <option value="pending">Pending</option>
+        <option value="confirmed">Confirmed</option>
+        <option value="done">Done</option>
+        <option value="cancelled">Cancelled</option>
+      </select>
+      <button class="ghost" id="refreshBtn">Refresh</button>
+    </div>
+    <table>
+      <thead><tr><th>#</th><th>Customer</th><th>Service</th><th>Kab</th><th>Status</th><th>Action</th></tr></thead>
+      <tbody id="bookingRows"></tbody>
+    </table>
+  </div>
+
+  <div class="card">
+    <h2>Feedback</h2>
+    <table>
+      <thead><tr><th>#</th><th>Naam</th><th>Rating</th><th>Message</th><th>Website par</th></tr></thead>
+      <tbody id="feedbackRows"></tbody>
+    </table>
+  </div>
+
+  <div class="card">
+    <h2>Services / Rate list</h2>
+    <table>
+      <thead><tr><th>Icon</th><th>Naam</th><th>Detail</th><th>Price ₹</th><th>Action</th></tr></thead>
+      <tbody id="serviceRows"></tbody>
+    </table>
+    <div class="toolbar" style="margin-top:14px;">
+      <input id="newIcon" placeholder="✂️" style="width:70px;">
+      <input id="newName" placeholder="Service ka naam">
+      <input id="newDesc" placeholder="Chhota detail">
+      <input id="newPrice" type="number" min="0" placeholder="Price" style="width:110px;">
+      <button id="addServiceBtn">Add</button>
+    </div>
+  </div>
+</main>
+
+<script>
+  const $ = (id) => document.getElementById(id);
+  const esc = (v) => String(v ?? '').replace(/[&<>"']/g, (c) => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+  const stars = (n) => '★★★★★'.slice(0, n) + '☆☆☆☆☆'.slice(0, 5 - n);
+  let token = localStorage.getItem('salonAdminToken') || '';
+
+  async function api(path, options = {}) {
+    const res = await fetch(path, {
+      ...options,
+      headers: { 'content-type': 'application/json', authorization: `Bearer ${token}`, ...(options.headers || {}) },
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.error || `Error ${res.status}`);
+    return data;
+  }
+
+  async function loadBookings() {
+    const status = $('statusFilter').value;
+    const { bookings, counts } = await api(`/api/admin/bookings${status ? `?status=${status}` : ''}`);
+    const total = counts.reduce((sum, c) => sum + c.count, 0);
+    $('bookingStats').innerHTML = [{ status: 'total', count: total }, ...counts]
+      .map((c) => `<div class="stat"><b>${c.count}</b>${esc(c.status)}</div>`).join('');
+    $('bookingRows').innerHTML = bookings.map((b) => `
+      <tr>
+        <td>${b.id}</td>
+        <td>${esc(b.name)}<br><a href="tel:+91${esc(b.phone)}">${esc(b.phone)}</a>
+          · <a href="https://wa.me/91${esc(b.phone)}" target="_blank" rel="noopener">WhatsApp</a>
+          ${b.note ? `<br><small>${esc(b.note)}</small>` : ''}</td>
+        <td>${esc(b.service)}</td>
+        <td>${esc(b.booking_date)}<br>${esc(b.booking_time)}</td>
+        <td><span class="pill ${esc(b.status)}">${esc(b.status)}</span></td>
+        <td><div class="row-actions">
+          <button data-booking="${b.id}" data-status="confirmed">Confirm</button>
+          <button class="ghost" data-booking="${b.id}" data-status="done">Done</button>
+          <button class="ghost" data-booking="${b.id}" data-status="cancelled">Cancel</button>
+        </div></td>
+      </tr>`).join('') || '<tr><td colspan="6">Abhi koi booking nahi.</td></tr>';
+  }
+
+  async function loadFeedback() {
+    const { feedback } = await api('/api/admin/feedback');
+    $('feedbackRows').innerHTML = feedback.map((f) => `
+      <tr>
+        <td>${f.id}</td>
+        <td>${esc(f.name)}<br><small>${esc(f.created_at)}</small></td>
+        <td class="stars">${stars(f.rating)}</td>
+        <td>${esc(f.message)}</td>
+        <td><button class="${f.approved ? 'ghost' : ''}" data-feedback="${f.id}" data-approved="${f.approved ? 0 : 1}">
+          ${f.approved ? 'Hataayein' : 'Dikhayein'}</button></td>
+      </tr>`).join('') || '<tr><td colspan="5">Abhi koi feedback nahi.</td></tr>';
+  }
+
+  async function loadServices() {
+    const { services } = await api('/api/admin/services');
+    $('serviceRows').innerHTML = services.map((s) => `
+      <tr>
+        <td>${esc(s.icon)}</td>
+        <td>${esc(s.name)}</td>
+        <td>${esc(s.description)}</td>
+        <td><input type="number" min="0" value="${s.price}" data-price="${s.id}" style="width:100px;"></td>
+        <td><div class="row-actions">
+          <button data-save-service="${s.id}">Save</button>
+          <button class="ghost" data-delete-service="${s.id}">Delete</button>
+        </div></td>
+      </tr>`).join('');
+  }
+
+  async function refreshAll() {
+    await Promise.all([loadBookings(), loadFeedback(), loadServices()]);
+  }
+
+  document.addEventListener('click', async (event) => {
+    const el = event.target.closest('button');
+    if (!el) return;
+    try {
+      if (el.dataset.booking) {
+        await api(`/api/admin/bookings/${el.dataset.booking}`, { method: 'PATCH', body: JSON.stringify({ status: el.dataset.status }) });
+        await loadBookings();
+      } else if (el.dataset.feedback) {
+        await api(`/api/admin/feedback/${el.dataset.feedback}`, { method: 'PATCH', body: JSON.stringify({ approved: el.dataset.approved === '1' }) });
+        await loadFeedback();
+      } else if (el.dataset.saveService) {
+        const id = el.dataset.saveService;
+        const row = el.closest('tr');
+        await api(`/api/admin/services/${id}`, {
+          method: 'PATCH',
+          body: JSON.stringify({
+            name: row.children[1].textContent.trim(),
+            description: row.children[2].textContent.trim(),
+            icon: row.children[0].textContent.trim(),
+            price: Number(row.querySelector(`[data-price="${id}"]`).value),
+          }),
+        });
+        await loadServices();
+      } else if (el.dataset.deleteService) {
+        if (!confirm('Yeh service hata dein?')) return;
+        await api(`/api/admin/services/${el.dataset.deleteService}`, { method: 'DELETE' });
+        await loadServices();
+      }
+    } catch (error) {
+      alert(error.message);
+    }
+  });
+
+  $('addServiceBtn').addEventListener('click', async () => {
+    try {
+      await api('/api/admin/services', {
+        method: 'POST',
+        body: JSON.stringify({
+          icon: $('newIcon').value.trim() || '✂️',
+          name: $('newName').value.trim(),
+          description: $('newDesc').value.trim(),
+          price: Number($('newPrice').value),
+        }),
+      });
+      $('newName').value = ''; $('newDesc').value = ''; $('newPrice').value = '';
+      await loadServices();
+    } catch (error) {
+      alert(error.message);
+    }
+  });
+
+  $('statusFilter').addEventListener('change', () => loadBookings().catch((e) => alert(e.message)));
+  $('refreshBtn').addEventListener('click', () => refreshAll().catch((e) => alert(e.message)));
+
+  $('logoutBtn').addEventListener('click', () => {
+    localStorage.removeItem('salonAdminToken');
+    location.reload();
+  });
+
+  async function signIn(candidate) {
+    token = candidate;
+    await api('/api/admin/bookings');
+    localStorage.setItem('salonAdminToken', token);
+    $('loginView').classList.add('hidden');
+    $('appView').classList.remove('hidden');
+    $('logoutBtn').classList.remove('hidden');
+    await refreshAll();
+  }
+
+  $('loginBtn').addEventListener('click', async () => {
+    try {
+      await signIn($('tokenInput').value.trim());
+    } catch (error) {
+      $('loginMsg').textContent = error.message;
+      $('loginMsg').classList.remove('hidden');
+    }
+  });
+
+  $('tokenInput').addEventListener('keydown', (e) => { if (e.key === 'Enter') $('loginBtn').click(); });
+
+  if (token) signIn(token).catch(() => localStorage.removeItem('salonAdminToken'));
+</script>
+</body>
+</html>
