@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex">
-<title>Salon Admin — Naya Andaz</title>
+<title>Salon Admin — New Welcome</title>
 <link href="https://fonts.googleapis.com/css2?family=Mukta:wght@400;600;700;800&display=swap" rel="stylesheet">
 <style>
   :root{ --black:#111; --off:#f6f5f2; --grey:#8a8a85; --line:#e7e5df; --gold:#c99a3d; }
@@ -40,12 +40,27 @@
   .msg.err{ color:#b23b3b; }
   .toolbar{ display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-bottom:14px; }
   .stars{ color:var(--gold); letter-spacing:2px; }
+  .thumb{ width:44px; height:44px; border-radius:8px; object-fit:cover; background:var(--off); display:block; }
+  .thumb-empty{ width:44px; height:44px; border-radius:8px; background:var(--off); display:flex; align-items:center; justify-content:center; font-size:1.1rem; }
+  .file-btn{ display:inline-block; font-size:0.76rem; padding:6px 10px; cursor:pointer; }
+  .switch-row{ display:flex; align-items:center; gap:10px; margin-bottom:12px; }
+  .switch-row input[type="checkbox"]{ width:18px; height:18px; }
+  .daily-list{ display:flex; flex-direction:column; gap:4px; max-height:340px; overflow-y:auto; }
+  .daily-row{ display:flex; align-items:center; gap:10px; font-size:0.86rem; }
+  .daily-row .d-date{ width:130px; flex-shrink:0; color:var(--grey); }
+  .daily-row .d-bar{ background:var(--black); height:14px; border-radius:4px; }
+  .daily-row .d-count{ font-weight:700; width:26px; text-align:right; flex-shrink:0; }
+  .gallery-grid{ display:grid; grid-template-columns:repeat(auto-fill,minmax(120px,1fr)); gap:10px; margin-top:14px; }
+  .gallery-item{ position:relative; border-radius:12px; overflow:hidden; background:var(--off); }
+  .gallery-item img{ width:100%; height:110px; object-fit:cover; display:block; }
+  .gallery-item button{ position:absolute; top:6px; right:6px; padding:4px 8px; font-size:0.7rem; background:rgba(17,17,17,0.75); }
+  .warn-note{ background:#fff4d6; color:#8a6300; padding:8px 12px; border-radius:10px; font-size:0.82rem; margin-bottom:12px; }
 </style>
 </head>
 <body>
 
 <header><div class="wrap">
-  <b>💈 Naya Andaz Salon — Admin</b>
+  <b>💈 New Welcome Salon — Admin</b>
   <button class="ghost hidden" id="logoutBtn">Logout</button>
 </div></header>
 
@@ -61,6 +76,68 @@
 
 <main class="wrap hidden" id="appView">
   <div class="card">
+    <h2>🔔 Salon Status / Notice</h2>
+    <p style="color:var(--grey); font-size:0.86rem; margin-top:0;">Yahan se decide karein ki website par customers ko koi notice dikhana hai ya nahi (jaise: aaj band hai, chhutti hai, waqt badal gaya, etc).</p>
+    <div class="switch-row">
+      <input type="checkbox" id="noticeActive">
+      <label for="noticeActive">Website par notice dikhayein</label>
+    </div>
+    <input type="text" id="noticeText" placeholder="Jaise: Aaj Diwali ki wajah se salon band hai" style="width:100%; margin-bottom:12px;">
+    <button id="saveNoticeBtn">Notice Save Karein</button>
+
+    <hr style="border:none; border-top:1.5px solid var(--line); margin:20px 0;">
+
+    <h2 style="font-size:1rem;">🖼️ Homepage ki Top Photo (Hero Image)</h2>
+    <p style="color:var(--grey); font-size:0.86rem;">Ye photo website ke sabse upar, badi si dikhegi.</p>
+    <div class="toolbar">
+      <img id="heroPreview" class="thumb" style="display:none; width:60px; height:60px;">
+      <label class="file-btn ghost" style="border:1.5px solid var(--line); border-radius:10px;">
+        📤 Photo Chuniye
+        <input type="file" id="heroFile" accept="image/*" style="display:none;">
+      </label>
+      <span id="heroFileName" style="font-size:0.82rem; color:var(--grey);"></span>
+      <button id="heroUploadBtn">Upload Karein</button>
+      <button class="ghost" id="heroRemoveBtn">🗑️ Hataayein</button>
+    </div>
+
+    <hr style="border:none; border-top:1.5px solid var(--line); margin:20px 0;">
+
+    <h2 style="font-size:1rem;">🧑‍🦱 "Hamare Baare Mein" wali Photo</h2>
+    <p style="color:var(--grey); font-size:0.86rem;">Ye photo "Hamare Baare Mein" section mein dikhegi (jaise salon ya barber ki photo).</p>
+    <div class="toolbar">
+      <img id="aboutPreview" class="thumb" style="display:none; width:60px; height:60px;">
+      <label class="file-btn ghost" style="border:1.5px solid var(--line); border-radius:10px;">
+        📤 Photo Chuniye
+        <input type="file" id="aboutFile" accept="image/*" style="display:none;">
+      </label>
+      <span id="aboutFileName" style="font-size:0.82rem; color:var(--grey);"></span>
+      <button id="aboutUploadBtn">Upload Karein</button>
+      <button class="ghost" id="aboutRemoveBtn">🗑️ Hataayein</button>
+    </div>
+
+    <hr style="border:none; border-top:1.5px solid var(--line); margin:20px 0;">
+
+    <h2 style="font-size:1rem;">💈 Salon ka Logo</h2>
+    <p style="color:var(--grey); font-size:0.86rem;">Ye logo header aur footer mein dikhega (abhi ek chhota icon ✂️ placeholder ke roop mein hai — jab bhi asli logo taiyaar ho, yahan se upload kar dena).</p>
+    <div class="toolbar">
+      <img id="logoPreview" class="thumb" style="display:none; width:60px; height:60px;">
+      <label class="file-btn ghost" style="border:1.5px solid var(--line); border-radius:10px;">
+        📤 Photo Chuniye
+        <input type="file" id="logoFile" accept="image/*" style="display:none;">
+      </label>
+      <span id="logoFileName" style="font-size:0.82rem; color:var(--grey);"></span>
+      <button id="logoUploadBtn">Upload Karein</button>
+      <button class="ghost" id="logoRemoveBtn">🗑️ Hataayein</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>📊 Daily Booking Count</h2>
+    <p style="color:var(--grey); font-size:0.86rem; margin-top:0;">Pichle 30 din mein kis din kitni bookings hui.</p>
+    <div class="daily-list" id="dailyList"></div>
+  </div>
+
+  <div class="card">
     <h2>Bookings</h2>
     <div class="stats" id="bookingStats"></div>
     <div class="toolbar">
@@ -72,9 +149,10 @@
         <option value="cancelled">Cancelled</option>
       </select>
       <button class="ghost" id="refreshBtn">Refresh</button>
+      <button class="ghost" id="cleanupBtn">🧹 30+ din purani bookings delete karein</button>
     </div>
     <table>
-      <thead><tr><th>#</th><th>Customer</th><th>Service</th><th>Kab</th><th>Status</th><th>Action</th></tr></thead>
+      <thead><tr><th>#</th><th>Customer</th><th>Service</th><th>Kab</th><th>Seat</th><th>Status</th><th>Action</th></tr></thead>
       <tbody id="bookingRows"></tbody>
     </table>
   </div>
@@ -90,7 +168,7 @@
   <div class="card">
     <h2>Services / Rate list</h2>
     <table>
-      <thead><tr><th>Icon</th><th>Naam</th><th>Detail</th><th>Price ₹</th><th>Action</th></tr></thead>
+      <thead><tr><th>Photo</th><th>Icon</th><th>Naam</th><th>Detail</th><th>Price ₹</th><th>Action</th></tr></thead>
       <tbody id="serviceRows"></tbody>
     </table>
     <div class="toolbar" style="margin-top:14px;">
@@ -100,6 +178,21 @@
       <input id="newPrice" type="number" min="0" placeholder="Price" style="width:110px;">
       <button id="addServiceBtn">Add</button>
     </div>
+  </div>
+
+  <div class="card">
+    <h2>🖼️ Gallery Photos</h2>
+    <p style="color:var(--grey); font-size:0.86rem; margin-top:0;">Photos upload karein — website ke gallery section mein dikhengi. (Max ~650KB per photo — WhatsApp se bheji hui photo aksar isi size ki hoti hai)</p>
+    <div class="toolbar">
+      <input type="text" id="galleryLabel" placeholder="Photo ka naam (optional)">
+      <label class="file-btn ghost" style="border:1.5px solid var(--line); border-radius:10px;">
+        📤 Photo Chuniye
+        <input type="file" id="galleryFile" accept="image/*" style="display:none;">
+      </label>
+      <span id="galleryFileName" style="font-size:0.82rem; color:var(--grey);"></span>
+      <button id="galleryUploadBtn">Upload Karein</button>
+    </div>
+    <div class="gallery-grid" id="galleryGrid"></div>
   </div>
 </main>
 
@@ -119,6 +212,196 @@
     return data;
   }
 
+  async function apiUpload(path, formData) {
+    const res = await fetch(path, {
+      method: 'POST',
+      headers: { authorization: `Bearer ${token}` },
+      body: formData,
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.error || `Error ${res.status}`);
+    return data;
+  }
+
+  async function uploadFile(file, folder) {
+    const form = new FormData();
+    form.append('file', file);
+    form.append('folder', folder);
+    return apiUpload('/api/admin/upload', form);
+  }
+
+  async function loadSettings() {
+    const s = await api('/api/settings');
+    $('noticeActive').checked = s.notice_active;
+    $('noticeText').value = s.notice_text;
+    if (s.hero_image_url) {
+      $('heroPreview').src = s.hero_image_url;
+      $('heroPreview').style.display = 'block';
+    } else {
+      $('heroPreview').style.display = 'none';
+    }
+    if (s.about_image_url) {
+      $('aboutPreview').src = s.about_image_url;
+      $('aboutPreview').style.display = 'block';
+    } else {
+      $('aboutPreview').style.display = 'none';
+    }
+    if (s.logo_image_url) {
+      $('logoPreview').src = s.logo_image_url;
+      $('logoPreview').style.display = 'block';
+    } else {
+      $('logoPreview').style.display = 'none';
+    }
+  }
+
+  $('saveNoticeBtn').addEventListener('click', async () => {
+    try {
+      await api('/api/admin/settings', {
+        method: 'PATCH',
+        body: JSON.stringify({ notice_active: $('noticeActive').checked, notice_text: $('noticeText').value.trim() }),
+      });
+      alert('Notice save ho gaya!');
+    } catch (error) {
+      alert(error.message);
+    }
+  });
+
+  $('heroFile').addEventListener('change', () => {
+    $('heroFileName').textContent = $('heroFile').files[0]?.name || '';
+  });
+
+  $('heroUploadBtn').addEventListener('click', async () => {
+    const file = $('heroFile').files[0];
+    if (!file) { alert('Pehle photo chuniye.'); return; }
+    try {
+      const uploaded = await uploadFile(file, 'hero');
+      await api('/api/admin/settings', { method: 'PATCH', body: JSON.stringify({ hero_image_key: uploaded.key }) });
+      $('heroFile').value = ''; $('heroFileName').textContent = '';
+      await loadSettings();
+      alert('Hero photo update ho gayi!');
+    } catch (error) {
+      alert(error.message);
+    }
+  });
+
+  $('heroRemoveBtn').addEventListener('click', async () => {
+    if (!confirm('Hero photo hata dein?')) return;
+    try {
+      await api('/api/admin/settings', { method: 'PATCH', body: JSON.stringify({ hero_image_key: '' }) });
+      await loadSettings();
+    } catch (error) {
+      alert(error.message);
+    }
+  });
+
+  $('aboutFile').addEventListener('change', () => {
+    $('aboutFileName').textContent = $('aboutFile').files[0]?.name || '';
+  });
+
+  $('aboutUploadBtn').addEventListener('click', async () => {
+    const file = $('aboutFile').files[0];
+    if (!file) { alert('Pehle photo chuniye.'); return; }
+    try {
+      const uploaded = await uploadFile(file, 'about');
+      await api('/api/admin/settings', { method: 'PATCH', body: JSON.stringify({ about_image_key: uploaded.key }) });
+      $('aboutFile').value = ''; $('aboutFileName').textContent = '';
+      await loadSettings();
+      alert('Photo update ho gayi!');
+    } catch (error) {
+      alert(error.message);
+    }
+  });
+
+  $('aboutRemoveBtn').addEventListener('click', async () => {
+    if (!confirm('Yeh photo hata dein?')) return;
+    try {
+      await api('/api/admin/settings', { method: 'PATCH', body: JSON.stringify({ about_image_key: '' }) });
+      await loadSettings();
+    } catch (error) {
+      alert(error.message);
+    }
+  });
+
+  $('logoFile').addEventListener('change', () => {
+    $('logoFileName').textContent = $('logoFile').files[0]?.name || '';
+  });
+
+  $('logoUploadBtn').addEventListener('click', async () => {
+    const file = $('logoFile').files[0];
+    if (!file) { alert('Pehle photo chuniye.'); return; }
+    try {
+      const uploaded = await uploadFile(file, 'logo');
+      await api('/api/admin/settings', { method: 'PATCH', body: JSON.stringify({ logo_image_key: uploaded.key }) });
+      $('logoFile').value = ''; $('logoFileName').textContent = '';
+      await loadSettings();
+      alert('Logo update ho gaya!');
+    } catch (error) {
+      alert(error.message);
+    }
+  });
+
+  $('logoRemoveBtn').addEventListener('click', async () => {
+    if (!confirm('Logo hata dein?')) return;
+    try {
+      await api('/api/admin/settings', { method: 'PATCH', body: JSON.stringify({ logo_image_key: '' }) });
+      await loadSettings();
+    } catch (error) {
+      alert(error.message);
+    }
+  });
+
+  async function loadDailySummary() {
+    const { days } = await api('/api/admin/bookings/summary');
+    const max = Math.max(1, ...days.map((d) => d.count));
+    $('dailyList').innerHTML = days.map((d) => `
+      <div class="daily-row">
+        <span class="d-date">${esc(d.date)}</span>
+        <span class="d-bar" style="width:${Math.round((d.count / max) * 160)}px;"></span>
+        <span class="d-count">${d.count}</span>
+      </div>`).join('') || '<p style="color:var(--grey); font-size:0.86rem;">Abhi koi data nahi.</p>';
+  }
+
+  $('cleanupBtn').addEventListener('click', async () => {
+    if (!confirm('30 din se purani saari bookings hamesha ke liye delete ho jayengi. Confirm karein?')) return;
+    try {
+      const result = await api('/api/admin/bookings/cleanup', { method: 'POST' });
+      alert(result.message);
+      await loadBookings();
+      await loadDailySummary();
+    } catch (error) {
+      alert(error.message);
+    }
+  });
+
+  async function loadGallery() {
+    const { images } = await api('/api/gallery');
+    $('galleryGrid').innerHTML = images.map((img) => `
+      <div class="gallery-item">
+        <img src="${esc(img.url)}" alt="${esc(img.label)}" loading="lazy">
+        <button data-delete-gallery="${img.id}">Hataayein</button>
+      </div>`).join('') || '<p style="color:var(--grey); font-size:0.86rem;">Abhi koi photo nahi.</p>';
+  }
+
+  $('galleryFile').addEventListener('change', () => {
+    $('galleryFileName').textContent = $('galleryFile').files[0]?.name || '';
+  });
+
+  $('galleryUploadBtn').addEventListener('click', async () => {
+    const file = $('galleryFile').files[0];
+    if (!file) { alert('Pehle photo chuniye.'); return; }
+    try {
+      const uploaded = await uploadFile(file, 'gallery');
+      await api('/api/admin/gallery', {
+        method: 'POST',
+        body: JSON.stringify({ image_key: uploaded.key, label: $('galleryLabel').value.trim() }),
+      });
+      $('galleryFile').value = ''; $('galleryFileName').textContent = ''; $('galleryLabel').value = '';
+      await loadGallery();
+    } catch (error) {
+      alert(error.message);
+    }
+  });
+
   async function loadBookings() {
     const status = $('statusFilter').value;
     const { bookings, counts } = await api(`/api/admin/bookings${status ? `?status=${status}` : ''}`);
@@ -133,13 +416,14 @@
           ${b.note ? `<br><small>${esc(b.note)}</small>` : ''}</td>
         <td>${esc(b.service)}</td>
         <td>${esc(b.booking_date)}<br>${esc(b.booking_time)}</td>
+        <td>💺 ${esc(b.seat_number)}</td>
         <td><span class="pill ${esc(b.status)}">${esc(b.status)}</span></td>
         <td><div class="row-actions">
           <button data-booking="${b.id}" data-status="confirmed">Confirm</button>
           <button class="ghost" data-booking="${b.id}" data-status="done">Done</button>
           <button class="ghost" data-booking="${b.id}" data-status="cancelled">Cancel</button>
         </div></td>
-      </tr>`).join('') || '<tr><td colspan="6">Abhi koi booking nahi.</td></tr>';
+      </tr>`).join('') || '<tr><td colspan="7">Abhi koi booking nahi.</td></tr>';
   }
 
   async function loadFeedback() {
@@ -159,6 +443,14 @@
     const { services } = await api('/api/admin/services');
     $('serviceRows').innerHTML = services.map((s) => `
       <tr>
+        <td>
+          ${s.image_url ? `<img class="thumb" src="${esc(s.image_url)}" alt="">` : `<div class="thumb-empty">${esc(s.icon)}</div>`}
+          <label class="file-btn ghost" style="border:1.5px solid var(--line); border-radius:8px; margin-top:4px;">
+            📤
+            <input type="file" accept="image/*" style="display:none;" data-service-photo="${s.id}">
+          </label>
+          ${s.image_url ? `<button class="ghost" data-remove-service-photo="${s.id}" style="font-size:0.68rem; padding:4px 6px; margin-top:4px;">🗑️</button>` : ''}
+        </td>
         <td>${esc(s.icon)}</td>
         <td>${esc(s.name)}</td>
         <td>${esc(s.description)}</td>
@@ -171,7 +463,7 @@
   }
 
   async function refreshAll() {
-    await Promise.all([loadBookings(), loadFeedback(), loadServices()]);
+    await Promise.all([loadBookings(), loadFeedback(), loadServices(), loadDailySummary(), loadGallery(), loadSettings()]);
   }
 
   document.addEventListener('click', async (event) => {
@@ -190,9 +482,9 @@
         await api(`/api/admin/services/${id}`, {
           method: 'PATCH',
           body: JSON.stringify({
-            name: row.children[1].textContent.trim(),
-            description: row.children[2].textContent.trim(),
-            icon: row.children[0].textContent.trim(),
+            name: row.children[2].textContent.trim(),
+            description: row.children[3].textContent.trim(),
+            icon: row.children[1].textContent.trim(),
             price: Number(row.querySelector(`[data-price="${id}"]`).value),
           }),
         });
@@ -201,7 +493,48 @@
         if (!confirm('Yeh service hata dein?')) return;
         await api(`/api/admin/services/${el.dataset.deleteService}`, { method: 'DELETE' });
         await loadServices();
+      } else if (el.dataset.deleteGallery) {
+        if (!confirm('Yeh photo hata dein?')) return;
+        await api(`/api/admin/gallery/${el.dataset.deleteGallery}`, { method: 'DELETE' });
+        await loadGallery();
+      } else if (el.dataset.removeServicePhoto) {
+        if (!confirm('Is service ki photo hata dein?')) return;
+        const id = el.dataset.removeServicePhoto;
+        const row = el.closest('tr');
+        await api(`/api/admin/services/${id}`, {
+          method: 'PATCH',
+          body: JSON.stringify({
+            name: row.children[2].textContent.trim(),
+            description: row.children[3].textContent.trim(),
+            icon: row.children[1].textContent.trim(),
+            price: Number(row.querySelector(`[data-price="${id}"]`).value),
+            image_key: '',
+          }),
+        });
+        await loadServices();
       }
+    } catch (error) {
+      alert(error.message);
+    }
+  });
+
+  document.addEventListener('change', async (event) => {
+    const input = event.target.closest('[data-service-photo]');
+    if (!input || !input.files[0]) return;
+    const id = input.dataset.servicePhoto;
+    try {
+      const uploaded = await uploadFile(input.files[0], 'service');
+      await api(`/api/admin/services/${id}`, {
+        method: 'PATCH',
+        body: JSON.stringify({
+          name: input.closest('tr').children[2].textContent.trim(),
+          description: input.closest('tr').children[3].textContent.trim(),
+          icon: input.closest('tr').children[1].textContent.trim(),
+          price: Number(input.closest('tr').querySelector(`[data-price="${id}"]`).value),
+          image_key: uploaded.key,
+        }),
+      });
+      await loadServices();
     } catch (error) {
       alert(error.message);
     }

@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Naya Andaz Salon — Beltukri</title>
+<title>New Welcome Salon — Beltukri</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Mukta:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -49,8 +49,9 @@
   .brand{ display:flex; align-items:center; gap:10px; }
   .brand-mark{
     width:40px; height:40px; border-radius:50%; background:var(--black); color:var(--white);
-    display:flex; align-items:center; justify-content:center; font-size:1.1rem; flex-shrink:0;
+    display:flex; align-items:center; justify-content:center; font-size:1.1rem; flex-shrink:0; overflow:hidden;
   }
+  .brand-mark img{ width:100%; height:100%; object-fit:cover; }
   .brand-text{ font-weight:800; font-size:1.15rem; }
   .brand-text small{ display:block; font-weight:500; font-size:0.72rem; color:var(--grey); }
   .nav-links{ display:flex; gap:26px; font-size:0.92rem; }
@@ -88,7 +89,9 @@
   .hero-visual{
     width:100%; aspect-ratio:1; border-radius:50%; background:rgba(255,255,255,0.06);
     display:flex; align-items:center; justify-content:center; border:1.5px dashed rgba(255,255,255,0.25);
+    overflow:hidden;
   }
+  .hero-visual img{ width:100%; height:100%; object-fit:cover; }
 
   /* ---------- Section shell ---------- */
   section{ padding:58px 0; }
@@ -104,16 +107,22 @@
   .services-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:18px; }
   .service-card{
     background:var(--card); border-radius:22px; padding:24px; box-shadow:0 2px 14px rgba(17,17,17,0.06);
-    transition:transform .2s, box-shadow .2s;
+    transition:transform .2s, box-shadow .2s; cursor:pointer;
   }
   .service-card:hover{ transform:translateY(-4px); box-shadow:0 10px 24px rgba(17,17,17,0.1); }
-  .service-card .top-row{ display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:14px; }
+  .service-card .service-photo{ width:100%; height:120px; object-fit:cover; border-radius:14px; margin-bottom:14px; display:block; }
+  .service-card .sc-top{ display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:14px; }
   .service-card .icon-circle{
     width:44px; height:44px; border-radius:50%; background:var(--off); display:flex; align-items:center; justify-content:center; font-size:1.2rem;
   }
   .service-card .price{ font-weight:800; font-size:1.2rem; }
-  .service-card h3{ font-size:1.08rem; margin-bottom:5px; }
-  .service-card p{ color:var(--grey); font-size:0.88rem; margin:0; }
+  .service-card .sc-info h3{ font-size:1.08rem; margin-bottom:5px; }
+  .service-card .sc-info p{ color:var(--grey); font-size:0.88rem; margin:0; }
+  .service-card .tap-hint{ font-size:0.74rem; color:var(--grey); margin-top:8px; font-weight:600; }
+
+  /* ---------- Notice banner ---------- */
+  .notice-banner{ background:#b23b3b; color:#fff; text-align:center; padding:11px 16px; font-weight:700; font-size:0.9rem; }
+  .notice-banner.hidden{ display:none; }
 
   /* ---------- Booking ---------- */
   .booking-card{
@@ -157,11 +166,90 @@
   .feedback-box .status-msg.ok{ background:rgba(255,255,255,0.14); color:#d8f5e4; }
   .feedback-box .status-msg.err{ background:rgba(255,255,255,0.14); color:#ffd2d2; }
 
+  /* ---------- Seat-style slot picker ---------- */
+  .step-block{ margin-bottom:22px; display:none; }
+  .step-block.active{ display:block; }
+  .step-title{ font-weight:800; font-size:0.92rem; margin-bottom:10px; display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+  .step-num{
+    width:22px; height:22px; border-radius:50%; background:var(--black); color:#fff; font-size:0.72rem;
+    display:inline-flex; align-items:center; justify-content:center; font-weight:800; flex-shrink:0;
+  }
+  .back-link{
+    margin-left:auto; background:none; border:none; color:var(--grey); font-size:0.78rem; font-weight:700;
+    cursor:pointer; font-family:'Mukta',sans-serif; padding:4px 0;
+  }
+  .back-link:hover{ color:var(--black); }
+
+  /* Step progress dots */
+  .step-progress{ display:flex; align-items:center; justify-content:center; margin-bottom:22px; }
+  .sp-dot{
+    width:28px; height:28px; border-radius:50%; background:var(--off); color:var(--grey); font-weight:800; font-size:0.82rem;
+    display:flex; align-items:center; justify-content:center; flex-shrink:0; border:1.5px solid var(--line);
+  }
+  .sp-dot.active{ background:var(--black); color:#fff; border-color:var(--black); }
+  .sp-dot.done{ background:#1c7a4b; color:#fff; border-color:#1c7a4b; }
+  .sp-line{ width:36px; height:2px; background:var(--line); flex-shrink:0; }
+
+  /* Calendar */
+  .cal-head{ display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; }
+  .cal-head b{ font-size:0.92rem; }
+  .cal-head button{
+    background:#fff; border:1.5px solid var(--line); border-radius:8px; width:30px; height:30px;
+    cursor:pointer; font-size:1rem; font-weight:700;
+  }
+  .cal-head button:disabled{ opacity:0.3; cursor:not-allowed; }
+  .cal-grid{ display:grid; grid-template-columns:repeat(7,1fr); gap:4px; text-align:center; }
+  .cal-dow{ font-size:0.66rem; color:var(--grey); font-weight:700; padding-bottom:4px; }
+  .cal-day{
+    position:relative; border:1.5px solid var(--line); border-radius:10px; padding:9px 2px;
+    background:#fff; font-weight:700; font-size:0.82rem; cursor:pointer; color:var(--black);
+  }
+  .cal-day.open{ background:#e3f4e9; border-color:#bfe4cd; color:#1c7a4b; }
+  .cal-day.closed{ background:#fbe4e4; border-color:#f0c2c2; color:#a5423b; }
+  .cal-day.disabled{ opacity:0.32; cursor:not-allowed; pointer-events:none; }
+  .cal-day.empty{ visibility:hidden; pointer-events:none; border:none; }
+  .cal-day.selected{ background:var(--black); color:#fff; border-color:var(--black); }
+  .cal-legend{ display:flex; gap:14px; flex-wrap:wrap; font-size:0.74rem; color:var(--grey); margin-top:10px; font-weight:600; }
+  .cal-legend span{ display:inline-flex; align-items:center; gap:5px; }
+  .cal-legend i{ width:12px; height:12px; border-radius:4px; display:inline-block; }
+  .cal-legend .i-open{ background:#e3f4e9; border:1.5px solid #bfe4cd; }
+  .cal-legend .i-closed{ background:#fbe4e4; border:1.5px solid #f0c2c2; }
+
+  /* Seat/time grid */
+  .seat-legend{ display:flex; gap:14px; flex-wrap:wrap; font-size:0.76rem; color:var(--black-2); margin-bottom:10px; font-weight:600; }
+  .seat-legend span{ display:inline-flex; align-items:center; gap:5px; }
+  .slot-row{
+    display:flex; align-items:center; gap:10px; border:1.5px solid var(--line); border-radius:12px;
+    padding:8px 10px; margin-bottom:6px; flex-wrap:wrap;
+  }
+  .slot-time{ width:76px; font-weight:800; font-size:0.8rem; flex-shrink:0; }
+  .slot-seats{ display:flex; gap:6px; flex-wrap:wrap; }
+  .seat-chip{
+    min-width:60px; border:1.5px solid var(--line); border-radius:8px; padding:6px 8px;
+    font-size:0.72rem; font-weight:700; text-align:center; cursor:pointer; background:#fff;
+    font-family:'Mukta',sans-serif; color:var(--black);
+  }
+  .seat-chip:hover:not(:disabled){ border-color:var(--black); }
+  .seat-chip.taken{ background:#f2f1ec; color:#a5a39b; border-color:#e7e5df; cursor:not-allowed; }
+  .seat-chip.selected{ background:var(--black); color:#fff; border-color:var(--black); }
+  .seat-map-note{ font-size:0.82rem; color:var(--grey); padding:8px 0; }
+
+  /* Ticket summary */
+  .ticket{
+    background:var(--off); border:1.5px dashed var(--black); border-radius:14px; padding:12px 16px;
+    margin-bottom:16px; font-size:0.85rem;
+  }
+  .ticket b{ display:block; margin-bottom:6px; font-size:0.86rem; }
+  .ticket .ticket-row{ display:flex; justify-content:space-between; padding:2px 0; }
+  .ticket .ticket-row span:first-child{ color:var(--grey); }
+
   /* ---------- About ---------- */
   .about{ display:grid; grid-template-columns:0.85fr 1.15fr; gap:44px; align-items:center; }
   .about-visual{
     aspect-ratio:4/5; border-radius:28px; background:var(--black); display:flex; align-items:center; justify-content:center;
+    overflow:hidden;
   }
+  .about-visual img{ width:100%; height:100%; object-fit:cover; display:block; }
   .about-copy p{ color:var(--black-2); margin-top:14px; max-width:54ch; }
   .stat-strip{ display:flex; gap:0; margin-top:26px; }
   .stat{ flex:1; padding:0 20px 0 0; }
@@ -200,7 +288,39 @@
   .gallery-tile:hover{ background:var(--black); }
   .gallery-tile:hover svg{ stroke:var(--white); }
   .gallery-tile svg{ transition:stroke .25s; }
+  .gallery-tile img{ width:100%; height:100%; object-fit:cover; border-radius:20px; display:block; cursor:zoom-in; }
   .gallery-note{ margin-top:16px; font-size:0.86rem; color:var(--grey); text-align:center; }
+
+  /* ---------- Gallery carousel (real photos) ---------- */
+  .gallery-carousel{ position:relative; }
+  .gc-track{
+    display:flex; overflow-x:auto; scroll-snap-type:x mandatory; gap:0; border-radius:20px;
+    -webkit-overflow-scrolling:touch; scrollbar-width:none; scroll-behavior:smooth;
+  }
+  .gc-track::-webkit-scrollbar{ display:none; }
+  .gc-slide{ flex:0 0 100%; scroll-snap-align:center; aspect-ratio:16/10; }
+  .gc-slide img{ width:100%; height:100%; object-fit:cover; display:block; border-radius:20px; }
+  .gc-arrow{
+    position:absolute; top:50%; transform:translateY(-50%); width:40px; height:40px; border-radius:50%;
+    background:rgba(17,17,17,0.62); color:#fff; border:none; font-size:1.4rem; line-height:1; cursor:pointer; z-index:5;
+  }
+  .gc-prev{ left:10px; }
+  .gc-next{ right:10px; }
+  .gc-dots{ display:flex; justify-content:center; gap:6px; margin-top:14px; }
+  .gc-dots button{ width:8px; height:8px; border-radius:50%; background:var(--line); border:none; padding:0; cursor:pointer; }
+  .gc-dots button.active{ background:var(--black); width:20px; border-radius:4px; }
+
+  /* ---------- Lightbox (photo zoom) ---------- */
+  .lightbox{
+    display:none; position:fixed; inset:0; background:rgba(10,10,10,0.92); z-index:200;
+    align-items:center; justify-content:center; padding:26px;
+  }
+  .lightbox.open{ display:flex; }
+  .lightbox img{ max-width:92vw; max-height:88vh; border-radius:14px; object-fit:contain; }
+  .lightbox-close{
+    position:fixed; top:18px; right:18px; width:42px; height:42px; border-radius:50%;
+    background:rgba(255,255,255,0.16); color:#fff; border:none; font-size:1.3rem; cursor:pointer; z-index:201;
+  }
 
   /* ---------- Hours / Location ---------- */
   .info-panel{ display:grid; grid-template-columns:1fr 1fr; gap:20px; }
@@ -233,17 +353,48 @@
 
   @media (max-width:820px){
     .top-strip .wrap{ justify-content:center; text-align:center; }
-    .hero-card{ grid-template-columns:1fr; padding:44px 26px; text-align:center; }
+    .wrap{ padding:0 18px; }
+    section{ padding:32px 0; }
+    .section-head{ margin:0 auto 22px; }
+    .hero{ padding:18px 0 24px; }
+    .hero-card{ grid-template-columns:1fr; padding:30px 22px; text-align:center; border-radius:22px; }
     .hero-actions{ justify-content:center; }
-    .hero-visual{ max-width:200px; margin:0 auto; order:-1; }
-    .services-grid{ grid-template-columns:1fr 1fr; }
-    .booking-card{ grid-template-columns:1fr; padding:36px 24px; }
-    .about{ grid-template-columns:1fr; }
+    .hero-visual{ max-width:150px; margin:0 auto; order:-1; }
+    .services-grid{ display:flex; flex-direction:column; gap:10px; }
+    .service-card{
+      display:flex; align-items:center; gap:12px; padding:10px 12px; border-radius:14px;
+    }
+    .service-card:hover{ transform:none; }
+    .service-card:has(.service-photo) .icon-circle{ display:none; }
+    .service-card .service-photo{
+      order:1; width:56px; height:56px; border-radius:12px; object-fit:cover; flex-shrink:0; margin:0;
+    }
+    .service-card .icon-circle{ order:1; width:56px; height:56px; flex-shrink:0; font-size:1.4rem; margin:0; }
+    .service-card .sc-top{ display:contents; }
+    .service-card .price{ order:3; font-size:0.98rem; font-weight:800; white-space:nowrap; }
+    .service-card .sc-info{ order:2; flex:1; min-width:0; }
+    .service-card .sc-info h3{ font-size:0.92rem; margin:0 0 2px; }
+    .service-card .sc-info p{ font-size:0.76rem; margin:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .service-card .tap-hint{ display:none; }
+    .booking-card{ grid-template-columns:1fr; padding:22px 16px; border-radius:22px; }
+    .booking-form{ padding:18px; border-radius:18px; }
+    .about{ grid-template-columns:1fr; gap:22px; }
+    .about-visual{ aspect-ratio:4/5; max-width:280px; margin:0 auto; border-radius:18px; }
     .review-wrap{ grid-template-columns:1fr; }
-    .gallery-grid{ grid-template-columns:repeat(2,1fr); }
-    .info-panel{ grid-template-columns:1fr; }
+    .review-card{ padding:16px; }
+    .feedback-box{ padding:20px; border-radius:18px; }
+    .gallery-grid{ grid-template-columns:repeat(2,1fr); gap:10px; }
+    .gallery-grid .placeholder-tile:nth-child(n+5){ display:none; }
+    .info-panel{ grid-template-columns:1fr; gap:16px; }
+    .info-col{ padding:22px; border-radius:18px; }
     .field-row{ grid-template-columns:1fr; }
-    .footer-grid{ grid-template-columns:1fr 1fr; }
+    .footer-grid{ grid-template-columns:1fr 1fr; gap:22px; }
+    footer{ padding:32px 0 0; margin-top:0; }
+    .footer-bottom{ padding:16px 0 70px; }
+    .stat-strip{ margin-top:18px; }
+    .stat b{ font-size:1.5rem; }
+    .booking-steps{ display:none; }
+    .booking-copy p{ margin-top:8px; font-size:0.9rem; }
     .nav-links{
       position:absolute; top:100%; left:0; right:0; background:var(--off);
       flex-direction:column; padding:20px 28px; gap:16px; display:none; box-shadow:0 8px 16px rgba(0,0,0,0.06);
@@ -253,8 +404,19 @@
     .nav-cta{ display:none; }
   }
   @media (max-width:520px){
-    .services-grid{ grid-template-columns:1fr; }
     .footer-grid{ grid-template-columns:1fr; }
+    .hero-card h1{ font-size:1.6rem; }
+  }
+  .mobile-book-fab{ display:none; }
+  @media (max-width:820px){
+    .mobile-book-fab{
+      display:flex; position:fixed; left:16px; right:16px; bottom:16px; z-index:80;
+      background:var(--black); color:#fff; border-radius:16px; padding:14px 20px;
+      align-items:center; justify-content:center; gap:8px; font-weight:800; font-size:0.95rem;
+      box-shadow:0 10px 26px rgba(17,17,17,0.35); text-decoration:none;
+      transition:transform .25s, opacity .25s;
+    }
+    .mobile-book-fab.hide{ transform:translateY(140%); opacity:0; pointer-events:none; }
   }
   :focus-visible{ outline:2px solid var(--black); outline-offset:2px; }
   @media (prefers-reduced-motion: reduce){ html{scroll-behavior:auto;} *{transition:none !important;} }
@@ -262,21 +424,29 @@
 </head>
 <body>
 
+<a href="#booking" class="mobile-book-fab" id="mobileBookFab">📅 Booking Karein</a>
+
+<div class="lightbox" id="lightbox">
+  <button type="button" class="lightbox-close" id="lightboxClose" aria-label="Band karein">✕</button>
+  <img id="lightboxImg" src="" alt="">
+</div>
+
+
 <div class="top-strip">
   <div class="wrap">
     <div class="top-left">
       <span>📍 Main Road, Beltukri Village</span>
       <span>Mon–Sat: 8AM–8:30PM</span>
     </div>
-    <a href="tel:+919861331862">📞 +91 98765 43210</a>
+    <a href="tel:+919861331862">📞 +91 98613 31862</a>
   </div>
 </div>
 
 <header>
   <div class="wrap nav">
     <div class="brand">
-      <span class="brand-mark">💈</span>
-      <span class="brand-text">Naya Andaz Salon<small>Beltukri wala</small></span>
+      <span class="brand-mark" id="headerLogo">💈</span>
+      <span class="brand-text">New Welcome Salon<small>Beltukri wala</small></span>
     </div>
     <nav class="nav-links" id="navLinks">
       <a href="#services">Services</a>
@@ -290,19 +460,23 @@
   </div>
 </header>
 
+<div class="notice-banner hidden" id="noticeBanner">
+  <span id="noticeBannerText"></span>
+</div>
+
 <section class="hero">
   <div class="wrap">
-    <div class="hero-card">
+    <div class="hero-card" id="heroCard">
       <div>
         <span class="hero-pill">📍 Beltukri Village · Walk-in Welcome</span>
         <h1>Behtareen Cutting, Saaf Shave, Poore Gaanv ka Bharosa.</h1>
-        <p>Naye trends se lekar classic style tak — Naya Andaz Salon mein har tarah ki cutting milti hai, poori safai aur apnepan ke saath.</p>
+        <p>Naye trends se lekar classic style tak — New Welcome Salon mein har tarah ki cutting milti hai, poori safai aur apnepan ke saath.</p>
         <div class="hero-actions">
           <a class="btn btn-solid" href="#booking">WhatsApp par Book Karein</a>
           <a class="btn btn-line" href="#services">Rate List Dekhein</a>
         </div>
       </div>
-      <div class="hero-visual">
+      <div class="hero-visual" id="heroVisual">
         <svg width="110" height="110" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.5">
           <circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/>
           <line x1="20" y1="4" x2="8.12" y2="15.88"/><line x1="14.47" y1="14.48" x2="20" y2="20"/><line x1="8.12" y1="8.12" x2="12" y2="12"/>
@@ -320,15 +494,15 @@
       <p>Koi hidden charge nahi — jo rate bataya, wahi lagega.</p>
     </div>
     <div class="services-grid" id="servicesGrid">
-      <div class="service-card"><div class="top-row"><div class="icon-circle">✂️</div><span class="price">₹80</span></div><h3>Haircut</h3><p>Scissor ya machine, aapki pasand</p></div>
-      <div class="service-card"><div class="top-row"><div class="icon-circle">🧴</div><span class="price">₹120</span></div><h3>Haircut + Wash</h3><p>Shampoo ke saath poora package</p></div>
-      <div class="service-card"><div class="top-row"><div class="icon-circle">🪒</div><span class="price">₹50</span></div><h3>Beard Trim</h3><p>Shape aur style ke saath</p></div>
-      <div class="service-card"><div class="top-row"><div class="icon-circle">🧼</div><span class="price">₹40</span></div><h3>Clean Shave</h3><p>Ekdum smooth aur saaf</p></div>
-      <div class="service-card"><div class="top-row"><div class="icon-circle">💇</div><span class="price">₹120</span></div><h3>Haircut + Beard</h3><p>Combo package, paisa vasool</p></div>
-      <div class="service-card"><div class="top-row"><div class="icon-circle">🎨</div><span class="price">₹150</span></div><h3>Hair Colour</h3><p>Grey hair ho ya style colour</p></div>
-      <div class="service-card"><div class="top-row"><div class="icon-circle">💆</div><span class="price">₹100</span></div><h3>Head Massage</h3><p>20 minute ki champi, poora aaram</p></div>
-      <div class="service-card"><div class="top-row"><div class="icon-circle">🧒</div><span class="price">₹60</span></div><h3>Kids Haircut</h3><p>10 saal tak ke bacchon ke liye</p></div>
-      <div class="service-card"><div class="top-row"><div class="icon-circle">🤵</div><span class="price">₹1,500</span></div><h3>Groom Package</h3><p>Shaadi ke din ke liye special</p></div>
+      <div class="service-card"><div class="sc-top"><div class="icon-circle">✂️</div><span class="price">₹80</span></div><div class="sc-info"><h3>Haircut</h3><p>Scissor ya machine, aapki pasand</p></div></div>
+      <div class="service-card"><div class="sc-top"><div class="icon-circle">🧴</div><span class="price">₹120</span></div><div class="sc-info"><h3>Haircut + Wash</h3><p>Shampoo ke saath poora package</p></div></div>
+      <div class="service-card"><div class="sc-top"><div class="icon-circle">🪒</div><span class="price">₹50</span></div><div class="sc-info"><h3>Beard Trim</h3><p>Shape aur style ke saath</p></div></div>
+      <div class="service-card"><div class="sc-top"><div class="icon-circle">🧼</div><span class="price">₹40</span></div><div class="sc-info"><h3>Clean Shave</h3><p>Ekdum smooth aur saaf</p></div></div>
+      <div class="service-card"><div class="sc-top"><div class="icon-circle">💇</div><span class="price">₹120</span></div><div class="sc-info"><h3>Haircut + Beard</h3><p>Combo package, paisa vasool</p></div></div>
+      <div class="service-card"><div class="sc-top"><div class="icon-circle">🎨</div><span class="price">₹150</span></div><div class="sc-info"><h3>Hair Colour</h3><p>Grey hair ho ya style colour</p></div></div>
+      <div class="service-card"><div class="sc-top"><div class="icon-circle">💆</div><span class="price">₹100</span></div><div class="sc-info"><h3>Head Massage</h3><p>20 minute ki champi, poora aaram</p></div></div>
+      <div class="service-card"><div class="sc-top"><div class="icon-circle">🧒</div><span class="price">₹60</span></div><div class="sc-info"><h3>Kids Haircut</h3><p>10 saal tak ke bacchon ke liye</p></div></div>
+      <div class="service-card"><div class="sc-top"><div class="icon-circle">🤵</div><span class="price">₹1,500</span></div><div class="sc-info"><h3>Groom Package</h3><p>Shaadi ke din ke liye special</p></div></div>
     </div>
   </div>
 </section>
@@ -347,46 +521,83 @@
         </ul>
       </div>
       <div class="booking-form">
-        <div class="field">
-          <label for="bName">Aapka Naam</label>
-          <input type="text" id="bName" placeholder="Jaise: Ramesh Kumar">
+        <div class="step-progress" id="stepProgress">
+          <span class="sp-dot active" data-step="1">1</span><span class="sp-line"></span>
+          <span class="sp-dot" data-step="2">2</span><span class="sp-line"></span>
+          <span class="sp-dot" data-step="3">3</span>
         </div>
-        <div class="field">
-          <label for="bPhone">Mobile Number</label>
-          <input type="tel" id="bPhone" inputmode="numeric" maxlength="13" placeholder="Jaise: 9861331862">
-        </div>
-        <div class="field">
-          <label for="bService">Service</label>
-          <select id="bService">
-            <option>Haircut — ₹80</option>
-            <option>Haircut + Wash — ₹120</option>
-            <option>Beard Trim — ₹50</option>
-            <option>Clean Shave — ₹40</option>
-            <option>Haircut + Beard Combo — ₹120</option>
-            <option>Hair Colour — ₹150</option>
-            <option>Head Massage — ₹100</option>
-            <option>Kids Haircut — ₹60</option>
-            <option>Groom Package — ₹1,500</option>
-          </select>
-        </div>
-        <div class="field-row">
-          <div class="field">
-            <label for="bDate">Date</label>
-            <input type="date" id="bDate">
+
+        <div class="step-block active" id="step1">
+          <div class="step-title"><span class="step-num">1</span> Kaunsi date chahiye?</div>
+          <div class="cal-head">
+            <button type="button" id="calPrev">◀</button>
+            <b id="calLabel">—</b>
+            <button type="button" id="calNext">▶</button>
           </div>
-          <div class="field">
-            <label for="bTime">Time</label>
-            <input type="time" id="bTime">
+          <div class="cal-grid" id="calGrid"></div>
+          <div class="cal-legend">
+            <span><i class="i-open"></i> Khula hai</span>
+            <span><i class="i-closed"></i> Band / Ravivaar</span>
           </div>
         </div>
-        <div class="field">
-          <label for="bNote">Koi baat batani ho? (optional)</label>
-          <input type="text" id="bNote" placeholder="Jaise: bacche ke saath aaunga">
+
+        <div class="step-block" id="step2">
+          <div class="step-title">
+            <span class="step-num">2</span> Kaunsa time aur seat chahiye?
+            <button type="button" class="back-link" id="backToStep1">← Date badlein</button>
+          </div>
+          <div class="seat-legend">
+            <span>✅ Khaali</span>
+            <span>⭐ Aapki Choice</span>
+            <span>🚫 Book Ho Gayi</span>
+          </div>
+          <div id="seatMap">
+            <p class="seat-map-note">Pehle upar date chuniye.</p>
+          </div>
         </div>
-        <button class="book-btn" id="bookBtn" type="button">📒 Booking Confirm Karein</button>
-        <button class="btn-ghost" id="waBookBtn" type="button">💬 WhatsApp par bhi bhejein</button>
-        <div class="status-msg" id="bookStatus" role="status"></div>
-        <p class="form-note">Booking seedha salon ke register mein chali jaati hai — hum call/WhatsApp par confirm karenge.</p>
+
+        <div class="step-block" id="step3">
+          <div class="step-title">
+            <span class="step-num">3</span> Apni details bharein
+            <button type="button" class="back-link" id="backToStep2">← Time badlein</button>
+          </div>
+          <div class="ticket" id="ticketBox" style="display:none;">
+            <b>🎫 Aapne chuna:</b>
+            <div class="ticket-row"><span>📅 Date</span><span id="ticketDate">—</span></div>
+            <div class="ticket-row"><span>⏰ Time</span><span id="ticketTime">—</span></div>
+            <div class="ticket-row"><span>💺 Seat</span><span id="ticketSeat">—</span></div>
+          </div>
+          <div class="field">
+            <label for="bName">Aapka Naam</label>
+            <input type="text" id="bName" placeholder="Jaise: Ramesh Kumar">
+          </div>
+          <div class="field">
+            <label for="bPhone">Mobile Number</label>
+            <input type="tel" id="bPhone" inputmode="numeric" maxlength="13" placeholder="Jaise: 9861331862">
+          </div>
+          <div class="field">
+            <label for="bService">Service</label>
+            <select id="bService">
+              <option>Haircut — ₹80</option>
+              <option>Haircut + Wash — ₹120</option>
+              <option>Beard Trim — ₹50</option>
+              <option>Clean Shave — ₹40</option>
+              <option>Haircut + Beard Combo — ₹120</option>
+              <option>Hair Colour — ₹150</option>
+              <option>Head Massage — ₹100</option>
+              <option>Kids Haircut — ₹60</option>
+              <option>Groom Package — ₹1,500</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="bNote">Koi baat batani ho? (optional)</label>
+            <input type="text" id="bNote" placeholder="Jaise: bacche ke saath aaunga">
+          </div>
+          <button class="book-btn" id="bookBtn" type="button">📒 Booking Confirm Karein</button>
+          <button class="btn-ghost" id="waBookBtn" type="button">💬 WhatsApp par bhi bhejein</button>
+          <div class="status-msg" id="bookStatus" role="status"></div>
+          <p class="form-note">Booking seedha salon ke register mein chali jaati hai — hum call/WhatsApp par confirm karenge.</p>
+        </div>
       </div>
     </div>
   </div>
@@ -394,7 +605,7 @@
 
 <section id="about">
   <div class="wrap about">
-    <div class="about-visual">
+    <div class="about-visual" id="aboutVisual">
       <svg viewBox="0 0 100 100" width="90" xmlns="http://www.w3.org/2000/svg">
         <circle cx="50" cy="50" r="46" fill="none" stroke="#fff" stroke-width="1.5" opacity="0.3"/>
         <path d="M30 62 Q50 30 70 62" fill="none" stroke="#fff" stroke-width="2"/>
@@ -404,7 +615,7 @@
     <div class="about-copy">
       <span class="eyebrow-pill">Hamare Baare Mein</span>
       <h2>Beltukri ke liye, Beltukri ke logo dwara.</h2>
-      <p>Naya Andaz Salon gaanv ka apna, bharosemand salon hai. Naye trends se lekar classic style tak, humare barber har tarah ki cutting jaante hain. Achhe products, poori safai aur apnepan ke saath — har customer ka swagat.</p>
+      <p>New Welcome Salon gaanv ka apna, bharosemand salon hai. Naye trends se lekar classic style tak, humare barber har tarah ki cutting jaante hain. Achhe products, poori safai aur apnepan ke saath — har customer ka swagat.</p>
       <div class="stat-strip">
         <div class="stat"><b>8+</b><span>Saal ka Anubhav</span></div>
         <div class="stat"><b>2000+</b><span>Khush Customers</span></div>
@@ -480,13 +691,19 @@
       <span class="eyebrow-pill">Gallery</span>
       <h2>Salon ki Jhalak</h2>
     </div>
-    <div class="gallery-grid">
-      <div class="gallery-tile"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#111" stroke-width="1.4"><circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><line x1="20" y1="4" x2="8.12" y2="15.88"/><line x1="14.47" y1="14.48" x2="20" y2="20"/><line x1="8.12" y1="8.12" x2="12" y2="12"/></svg></div>
-      <div class="gallery-tile"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#111" stroke-width="1.4"><path d="M3 3l18 18M9 3v6M3 9h6M21 3l-6 6"/></svg></div>
-      <div class="gallery-tile"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#111" stroke-width="1.4"><rect x="3" y="11" width="18" height="3" rx="1"/><line x1="5" y1="14" x2="5" y2="19"/><line x1="9" y1="14" x2="9" y2="19"/><line x1="13" y1="14" x2="13" y2="19"/><line x1="17" y1="14" x2="17" y2="19"/></svg></div>
-      <div class="gallery-tile"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#111" stroke-width="1.4"><path d="M4 21v-7a8 8 0 0116 0v7"/><path d="M4 14h16"/></svg></div>
+    <div class="gallery-grid" id="galleryGrid">
+      <div class="gallery-tile placeholder-tile"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#111" stroke-width="1.4"><circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><line x1="20" y1="4" x2="8.12" y2="15.88"/><line x1="14.47" y1="14.48" x2="20" y2="20"/><line x1="8.12" y1="8.12" x2="12" y2="12"/></svg></div>
+      <div class="gallery-tile placeholder-tile"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#111" stroke-width="1.4"><path d="M3 3l18 18M9 3v6M3 9h6M21 3l-6 6"/></svg></div>
+      <div class="gallery-tile placeholder-tile"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#111" stroke-width="1.4"><rect x="3" y="11" width="18" height="3" rx="1"/><line x1="5" y1="14" x2="5" y2="19"/><line x1="9" y1="14" x2="9" y2="19"/><line x1="13" y1="14" x2="13" y2="19"/><line x1="17" y1="14" x2="17" y2="19"/></svg></div>
+      <div class="gallery-tile placeholder-tile"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#111" stroke-width="1.4"><path d="M4 21v-7a8 8 0 0116 0v7"/><path d="M4 14h16"/></svg></div>
     </div>
-    <p class="gallery-note">Yeh placeholder icons hain — apni salon ki asli photos yahan laga sakte hain.</p>
+    <div class="gallery-carousel" id="galleryCarousel" style="display:none;">
+      <button type="button" class="gc-arrow gc-prev" id="gcPrev" aria-label="Pichli photo">‹</button>
+      <div class="gc-track" id="gcTrack"></div>
+      <button type="button" class="gc-arrow gc-next" id="gcNext" aria-label="Agli photo">›</button>
+      <div class="gc-dots" id="gcDots"></div>
+    </div>
+    <p class="gallery-note" id="galleryNote">Yeh placeholder icons hain — apni salon ki asli photos yahan laga sakte hain.</p>
   </div>
 </section>
 
@@ -505,8 +722,8 @@
       <div class="info-col invert">
         <h3>Sampark Karein</h3>
         <div class="contact-line"><span class="lbl">Address</span><span>Main Road, Beltukri Village</span></div>
-        <div class="contact-line"><span class="lbl">Phone</span><span>+91 98765 43210</span></div>
-        <div class="contact-line"><span class="lbl">WhatsApp</span><span>+91 98765 43210</span></div>
+        <div class="contact-line"><span class="lbl">Phone</span><a href="tel:+919861331862">+91 98613 31862</a></div>
+        <div class="contact-line"><span class="lbl">WhatsApp</span><a href="https://wa.me/919861331862" target="_blank" rel="noopener">+91 98613 31862</a></div>
       </div>
     </div>
   </div>
@@ -517,12 +734,12 @@
     <div class="footer-grid">
       <div class="footer-col">
         <div class="footer-brand">
-          <span class="brand-mark">💈</span>
-          <span>Naya Andaz Salon</span>
+          <span class="brand-mark" id="footerLogo">💈</span>
+          <span>New Welcome Salon</span>
         </div>
         <p>Beltukri village ka apna, bharosemand men's salon. Saal 2018 se poore gaanv ki seva mein.</p>
         <div class="footer-social">
-          <a href="https://wa.me/918613311862" target="_blank" rel="noopener" aria-label="WhatsApp">💬</a>
+          <a href="https://wa.me/919861331862" target="_blank" rel="noopener" aria-label="WhatsApp">💬</a>
           <a href="tel:+919861331862" aria-label="Call">📞</a>
           <a href="#visit" aria-label="Location">📍</a>
         </div>
@@ -548,12 +765,12 @@
       <div class="footer-col">
         <h4>Sampark</h4>
         <p>Main Road, Beltukri Village</p>
-        <p style="margin-top:8px;">+91 98765 43210</p>
+        <p style="margin-top:8px;">+91 98613 31862</p>
         <p style="margin-top:8px;">Som–Shani: 8AM–8:30PM</p>
       </div>
     </div>
     <div class="footer-bottom">
-      <span>💈 Naya Andaz Salon — Beltukri</span>
+      <span>💈 New Welcome Salon — Beltukri</span>
       <span>&copy; 2026 — Sabhi adhikar surakshit</span>
     </div>
   </div>
@@ -591,15 +808,90 @@
     if (!services.length) return;
 
     $('servicesGrid').innerHTML = services.map((s) => `
-      <div class="service-card">
-        <div class="top-row"><div class="icon-circle">${escapeHtml(s.icon)}</div>
+      <div class="service-card" data-service-name="${escapeHtml(s.name)}" data-service-price="${s.price}">
+        ${s.image_url ? `<img class="service-photo" src="${escapeHtml(s.image_url)}" alt="${escapeHtml(s.name)}" loading="lazy">` : ''}
+        <div class="sc-top"><div class="icon-circle">${escapeHtml(s.icon)}</div>
         <span class="price">₹${s.price.toLocaleString('en-IN')}</span></div>
-        <h3>${escapeHtml(s.name)}</h3><p>${escapeHtml(s.description)}</p>
+        <div class="sc-info"><h3>${escapeHtml(s.name)}</h3><p>${escapeHtml(s.description)}</p></div>
+        <p class="tap-hint">👆 Book karne ke liye tap karein</p>
       </div>`).join('');
 
     $('bService').innerHTML = services.map((s) =>
       `<option value="${escapeHtml(s.name)} — ₹${s.price}">${escapeHtml(s.name)} — ₹${s.price}</option>`
     ).join('');
+  }
+
+  $('servicesGrid').addEventListener('click', (event) => {
+    const card = event.target.closest('.service-card');
+    if (!card) return;
+    const value = `${card.dataset.serviceName} — ₹${card.dataset.servicePrice}`;
+    const option = [...$('bService').options].find((o) => o.value === value);
+    if (option) $('bService').value = value;
+    document.getElementById('booking').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
+
+  async function loadNotice() {
+    const s = await api('/api/settings');
+    if (s.notice_active && s.notice_text) {
+      $('noticeBannerText').textContent = `📢 ${s.notice_text}`;
+      $('noticeBanner').classList.remove('hidden');
+    }
+    if (s.hero_image_url) {
+      $('heroCard').style.backgroundImage =
+        `linear-gradient(rgba(17,17,17,0.55), rgba(17,17,17,0.55)), url('${s.hero_image_url}')`;
+      $('heroCard').style.backgroundSize = 'cover';
+      $('heroCard').style.backgroundPosition = 'center';
+    }
+    if (s.about_image_url) {
+      $('aboutVisual').innerHTML = `<img src="${escapeHtml(s.about_image_url)}" alt="New Welcome Salon">`;
+      attachLightbox();
+    }
+    if (s.logo_image_url) {
+      const logoImg = `<img src="${escapeHtml(s.logo_image_url)}" alt="New Welcome Salon logo">`;
+      $('headerLogo').innerHTML = logoImg;
+      $('footerLogo').innerHTML = logoImg;
+      $('heroVisual').innerHTML = `<img src="${escapeHtml(s.logo_image_url)}" alt="New Welcome Salon logo" style="border-radius:50%;">`;
+    }
+  }
+
+  async function loadGallery() {
+    const { images } = await api('/api/gallery');
+    if (!images.length) return; // koi photo upload nahi hui to placeholder icons hi rehne do
+
+    $('galleryGrid').style.display = 'none';
+    $('galleryNote').style.display = 'none';
+    $('galleryCarousel').style.display = 'block';
+
+    $('gcTrack').innerHTML = images.map((img) =>
+      `<div class="gc-slide"><img src="${escapeHtml(img.url)}" alt="${escapeHtml(img.label)}" loading="lazy"></div>`
+    ).join('');
+    $('gcDots').innerHTML = images.map((_, i) =>
+      `<button type="button" data-idx="${i}" class="${i === 0 ? 'active' : ''}" aria-label="Photo ${i + 1}"></button>`
+    ).join('');
+
+    setupCarousel();
+    attachLightbox();
+  }
+
+  function setupCarousel() {
+    const track = $('gcTrack');
+    const dots = [...$('gcDots').children];
+    if (!dots.length) return;
+
+    function updateDots() {
+      const idx = Math.round(track.scrollLeft / track.clientWidth) || 0;
+      dots.forEach((d, i) => d.classList.toggle('active', i === idx));
+    }
+    let scrollTimer;
+    track.addEventListener('scroll', () => {
+      clearTimeout(scrollTimer);
+      scrollTimer = setTimeout(updateDots, 100);
+    });
+    $('gcPrev').onclick = () => track.scrollBy({ left: -track.clientWidth, behavior: 'smooth' });
+    $('gcNext').onclick = () => track.scrollBy({ left: track.clientWidth, behavior: 'smooth' });
+    dots.forEach((d, i) => d.addEventListener('click', () => {
+      track.scrollTo({ left: i * track.clientWidth, behavior: 'smooth' });
+    }));
   }
 
   async function loadReviews() {
@@ -617,22 +909,201 @@
       </div>`).join('');
   }
 
-  function bookingMessage(name, service, date, time) {
+  const MONTH_NAMES = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const DOW_NAMES = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+
+  let selectedDate = '';
+  let selectedTime = '';
+  let selectedSeat = null;
+  let calViewDate = new Date();
+
+  function goToStep(n) {
+    for (let i = 1; i <= 3; i += 1) {
+      $(`step${i}`).classList.toggle('active', i === n);
+    }
+    $('stepProgress').querySelectorAll('.sp-dot').forEach((dot) => {
+      const step = Number(dot.dataset.step);
+      dot.classList.toggle('active', step === n);
+      dot.classList.toggle('done', step < n);
+    });
+    document.getElementById('booking').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  $('stepProgress').addEventListener('click', (event) => {
+    const dot = event.target.closest('.sp-dot');
+    if (!dot || !dot.classList.contains('done')) return;
+    goToStep(Number(dot.dataset.step));
+  });
+
+  $('backToStep1').addEventListener('click', () => goToStep(1));
+  $('backToStep2').addEventListener('click', () => goToStep(2));
+
+  function ymd(d) {
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  }
+
+  function fmt12h(time) {
+    const [hh, mm] = time.split(':').map(Number);
+    const period = hh >= 12 ? 'PM' : 'AM';
+    const h12 = hh % 12 === 0 ? 12 : hh % 12;
+    return `${h12}:${String(mm).padStart(2, '0')} ${period}`;
+  }
+
+  function fmtDateLong(dateStr) {
+    const d = new Date(`${dateStr}T00:00:00`);
+    const days = ['Ravivaar','Somvaar','Mangalvaar','Budhvaar','Guruvaar','Shukravaar','Shanivaar'];
+    return `${d.getDate()} ${MONTH_NAMES[d.getMonth()]} ${d.getFullYear()} (${days[d.getDay()]})`;
+  }
+
+  function renderCalendar() {
+    const year = calViewDate.getFullYear();
+    const month = calViewDate.getMonth();
+    $('calLabel').textContent = `${MONTH_NAMES[month]} ${year}`;
+
+    const todayStr = ymd(new Date());
+    const firstDay = new Date(year, month, 1);
+    let startOffset = firstDay.getDay() - 1; // Monday-first grid
+    if (startOffset < 0) startOffset = 6;
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+    const now = new Date();
+    const isPastMonth = year < now.getFullYear() || (year === now.getFullYear() && month < now.getMonth());
+    $('calPrev').disabled = isPastMonth;
+
+    let html = DOW_NAMES.map((d) => `<div class="cal-dow">${d}</div>`).join('');
+    for (let i = 0; i < startOffset; i += 1) html += '<div class="cal-day empty"></div>';
+
+    for (let day = 1; day <= daysInMonth; day += 1) {
+      const d = new Date(year, month, day);
+      const dStr = ymd(d);
+      const isSunday = d.getDay() === 0;
+      const isPast = dStr < todayStr;
+      const isSelected = dStr === selectedDate;
+      const cls = ['cal-day'];
+      if (isPast) cls.push('disabled');
+      else cls.push(isSunday ? 'closed' : 'open');
+      if (isSelected) cls.push('selected');
+      html += `<button type="button" class="${cls.join(' ')}" data-date="${dStr}" ${isPast ? 'disabled' : ''}>
+        ${day}
+      </button>`;
+    }
+    $('calGrid').innerHTML = html;
+  }
+
+  $('calGrid').addEventListener('click', (event) => {
+    const btn = event.target.closest('.cal-day');
+    if (!btn || btn.disabled || btn.classList.contains('empty')) return;
+    selectedDate = btn.dataset.date;
+    renderCalendar();
+    loadAvailability();
+    goToStep(2);
+  });
+
+  $('calPrev').addEventListener('click', () => {
+    calViewDate.setMonth(calViewDate.getMonth() - 1);
+    renderCalendar();
+  });
+  $('calNext').addEventListener('click', () => {
+    calViewDate.setMonth(calViewDate.getMonth() + 1);
+    renderCalendar();
+  });
+
+  function updateTicket() {
+    const box = $('ticketBox');
+    if (!selectedDate || !selectedTime || !selectedSeat) {
+      box.style.display = 'none';
+      return;
+    }
+    box.style.display = 'block';
+    $('ticketDate').textContent = fmtDateLong(selectedDate);
+    $('ticketTime').textContent = fmt12h(selectedTime);
+    $('ticketSeat').textContent = `Seat ${selectedSeat}`;
+  }
+
+  function renderSeatMap(data) {
+    const box = $('seatMap');
+    selectedTime = '';
+    selectedSeat = null;
+    updateTicket();
+
+    if (data.closed) {
+      box.innerHTML = '<p class="seat-map-note">🚫 Ravivaar ko salon band rehta hai. Kripya doosri date chuniye.</p>';
+      return;
+    }
+    if (!data.slots.length) {
+      box.innerHTML = '<p class="seat-map-note">Is date ke liye koi slot nahi mila.</p>';
+      return;
+    }
+
+    box.innerHTML = data.slots.map((slot) => {
+      const seatChips = slot.seats.map((s) => {
+        const cls = s.taken ? 'taken' : '';
+        const label = s.taken ? `🚫 Seat ${s.number}` : `✅ Seat ${s.number}`;
+        return `<button type="button" class="seat-chip ${cls}" data-time="${slot.time}" data-seat="${s.number}" ${s.taken ? 'disabled' : ''}>${label}</button>`;
+      }).join('');
+      return `<div class="slot-row">
+        <span class="slot-time">${fmt12h(slot.time)}</span>
+        <div class="slot-seats">${seatChips}</div>
+      </div>`;
+    }).join('');
+  }
+
+  $('seatMap').addEventListener('click', (event) => {
+    const btn = event.target.closest('.seat-chip');
+    if (!btn || btn.disabled) return;
+    $('seatMap').querySelectorAll('.seat-chip.selected').forEach((el) => {
+      el.classList.remove('selected');
+      el.textContent = `✅ Seat ${el.dataset.seat}`;
+    });
+    btn.classList.add('selected');
+    btn.textContent = `⭐ Seat ${btn.dataset.seat}`;
+    selectedTime = btn.dataset.time;
+    selectedSeat = Number(btn.dataset.seat);
+    updateTicket();
+    goToStep(3);
+  });
+
+  async function loadAvailability() {
+    if (!selectedDate) {
+      $('seatMap').innerHTML = '<p class="seat-map-note">Pehle upar date chuniye.</p>';
+      return;
+    }
+    $('seatMap').innerHTML = '<p class="seat-map-note">Slot load ho rahe hain...</p>';
+    try {
+      const data = await api(`/api/availability?date=${selectedDate}`);
+      renderSeatMap(data);
+    } catch (error) {
+      $('seatMap').innerHTML = `<p class="seat-map-note">Slot load nahi ho paaye: ${escapeHtml(error.message)}</p>`;
+    }
+  }
+
+  function bookingMessage(name, service, date, time, seat) {
     let msg = `Namaste! Main ${name} booking karna chahta/chahti hoon.\nService: ${service}`;
     if (date) msg += `\nDate: ${date}`;
     if (time) msg += `\nTime: ${time}`;
+    if (seat) msg += `\nSeat: ${seat}`;
     return `${msg}\n\nPlease confirm karein. Dhanyawad!`;
   }
 
   $('bookBtn').addEventListener('click', async () => {
     const btn = $('bookBtn');
     const status = $('bookStatus');
+    if (!selectedDate) {
+      showStatus(status, 'Kripya pehle date chuniye.', false);
+      return;
+    }
+    if (!selectedTime || !selectedSeat) {
+      showStatus(status, 'Kripya apna time aur seat chuniye.', false);
+      return;
+    }
+
     const payload = {
       name: $('bName').value.trim(),
       phone: $('bPhone').value.trim(),
       service: $('bService').value,
-      date: $('bDate').value,
-      time: $('bTime').value,
+      date: selectedDate,
+      time: selectedTime,
+      seat: selectedSeat,
       note: $('bNote').value.trim(),
     };
 
@@ -643,8 +1114,9 @@
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify(payload),
       });
-      showStatus(status, `${data.message} (Booking no. ${data.id})`, true);
+      showStatus(status, `${data.message} (Booking no. ${data.id}, Seat ${data.seat})`, true);
       $('bNote').value = '';
+      loadAvailability();
     } catch (error) {
       showStatus(status, error.message, false);
     } finally {
@@ -654,7 +1126,7 @@
 
   $('waBookBtn').addEventListener('click', () => {
     const name = $('bName').value.trim() || 'Customer';
-    const msg = bookingMessage(name, $('bService').value, $('bDate').value, $('bTime').value);
+    const msg = bookingMessage(name, $('bService').value, selectedDate, selectedTime, selectedSeat);
     window.open(`https://wa.me/${SALON_WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`, '_blank');
   });
 
@@ -681,9 +1153,42 @@
     }
   });
 
-  $('bDate').min = new Date(Date.now() + 5.5 * 3600 * 1000).toISOString().slice(0, 10);
+  renderCalendar();
   loadServices().catch(() => {});
   loadReviews().catch(() => {});
+  loadNotice().catch(() => {});
+  loadGallery().catch(() => {});
+  loadAvailability();
+
+  const bookingSection = document.getElementById('booking');
+  const mobileFab = $('mobileBookFab');
+  if (bookingSection && mobileFab && 'IntersectionObserver' in window) {
+    const fabObserver = new IntersectionObserver(
+      ([entry]) => mobileFab.classList.toggle('hide', entry.isIntersecting),
+      { threshold: 0.15 }
+    );
+    fabObserver.observe(bookingSection);
+  }
+
+  function openLightbox(src, alt) {
+    $('lightboxImg').src = src;
+    $('lightboxImg').alt = alt || '';
+    $('lightbox').classList.add('open');
+  }
+  function closeLightbox() {
+    $('lightbox').classList.remove('open');
+    $('lightboxImg').src = '';
+  }
+  function attachLightbox() {
+    document.querySelectorAll('#galleryGrid .gallery-tile img, #gcTrack img, #aboutVisual img').forEach((img) => {
+      img.style.cursor = 'zoom-in';
+      img.addEventListener('click', () => openLightbox(img.src, img.alt));
+    });
+  }
+  $('lightboxClose').addEventListener('click', closeLightbox);
+  $('lightbox').addEventListener('click', (event) => { if (event.target.id === 'lightbox') closeLightbox(); });
+  document.addEventListener('keydown', (event) => { if (event.key === 'Escape') closeLightbox(); });
+  attachLightbox();
 </script>
 
 </body>
