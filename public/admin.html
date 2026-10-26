@@ -28,6 +28,7 @@
   .pill.pending{ background:#fff4d6; color:#8a6300; }
   .pill.confirmed{ background:#d9f2e4; color:#1c7a4b; }
   .pill.done{ background:#e2e8f5; color:#2f4f8f; }
+  .pill.awaiting_payment{ background:#ffe9d6; color:#9a4a00; }
   .pill.cancelled{ background:#fadede; color:#a33; }
   .row-actions{ display:flex; gap:6px; flex-wrap:wrap; }
   .row-actions button{ padding:6px 10px; font-size:0.8rem; }
@@ -84,6 +85,20 @@
     </div>
     <input type="text" id="noticeText" placeholder="Jaise: Aaj Diwali ki wajah se salon band hai" style="width:100%; margin-bottom:12px;">
     <button id="saveNoticeBtn">Notice Save Karein</button>
+
+    <hr style="border:none; border-top:1.5px solid var(--line); margin:20px 0;">
+
+    <h2 style="font-size:1rem;">💳 Online Payment Discount</h2>
+    <p style="color:var(--grey); font-size:0.86rem; margin-top:0;">Jo customer website par online pay karega use itna % discount milega. 0 rakhne par koi discount nahi hoga.</p>
+    <div class="switch-row">
+      <input type="checkbox" id="payEnabled">
+      <label for="payEnabled">Online payment chalu rakhein</label>
+    </div>
+    <div class="toolbar">
+      <input type="number" id="discountPct" min="0" max="90" step="1" style="width:110px;"> <b>% discount</b>
+      <button id="saveDiscountBtn">Save Karein</button>
+    </div>
+    <p id="payNote" style="color:var(--grey); font-size:0.82rem; margin-bottom:0;"></p>
 
     <hr style="border:none; border-top:1.5px solid var(--line); margin:20px 0;">
 
@@ -147,12 +162,13 @@
         <option value="confirmed">Confirmed</option>
         <option value="done">Done</option>
         <option value="cancelled">Cancelled</option>
+        <option value="awaiting_payment">Payment baaki</option>
       </select>
       <button class="ghost" id="refreshBtn">Refresh</button>
       <button class="ghost" id="cleanupBtn">🧹 30+ din purani bookings delete karein</button>
     </div>
     <table>
-      <thead><tr><th>#</th><th>Customer</th><th>Service</th><th>Kab</th><th>Seat</th><th>Status</th><th>Action</th></tr></thead>
+      <thead><tr><th>#</th><th>Customer</th><th>Service</th><th>Kab</th><th>Seat</th><th>Payment</th><th>Status</th><th>Action</th></tr></thead>
       <tbody id="bookingRows"></tbody>
     </table>
   </div>
@@ -234,6 +250,11 @@
     const s = await api('/api/settings');
     $('noticeActive').checked = s.notice_active;
     $('noticeText').value = s.notice_text;
+    $('payEnabled').checked = s.online_payment_enabled;
+    $('discountPct').value = s.online_discount_percent;
+    $('payNote').textContent = s.online_payment_available
+      ? '✅ Razorpay connected hai, website par online payment dikh raha hai.'
+      : '⚠️ Abhi website par online payment nahi dikh raha (Razorpay keys set nahi hain ya payment band hai).';
     if (s.hero_image_url) {
       $('heroPreview').src = s.hero_image_url;
       $('heroPreview').style.display = 'block';
@@ -261,6 +282,22 @@
         body: JSON.stringify({ notice_active: $('noticeActive').checked, notice_text: $('noticeText').value.trim() }),
       });
       alert('Notice save ho gaya!');
+    } catch (error) {
+      alert(error.message);
+    }
+  });
+
+  $('saveDiscountBtn').addEventListener('click', async () => {
+    try {
+      await api('/api/admin/settings', {
+        method: 'PATCH',
+        body: JSON.stringify({
+          online_payment_enabled: $('payEnabled').checked,
+          online_discount_percent: Number($('discountPct').value),
+        }),
+      });
+      await loadSettings();
+      alert('Payment settings save ho gayi!');
     } catch (error) {
       alert(error.message);
     }
@@ -417,13 +454,16 @@
         <td>${esc(b.service)}</td>
         <td>${esc(b.booking_date)}<br>${esc(b.booking_time)}</td>
         <td>💺 ${esc(b.seat_number)}</td>
+        <td>${b.payment_mode === 'online'
+          ? (b.payment_status === 'paid' ? `✅ Paid ₹${b.amount_paise / 100}` : '⏳ Payment baaki')
+          : '🏪 Salon par'}</td>
         <td><span class="pill ${esc(b.status)}">${esc(b.status)}</span></td>
         <td><div class="row-actions">
           <button data-booking="${b.id}" data-status="confirmed">Confirm</button>
           <button class="ghost" data-booking="${b.id}" data-status="done">Done</button>
           <button class="ghost" data-booking="${b.id}" data-status="cancelled">Cancel</button>
         </div></td>
-      </tr>`).join('') || '<tr><td colspan="7">Abhi koi booking nahi.</td></tr>';
+      </tr>`).join('') || '<tr><td colspan="8">Abhi koi booking nahi.</td></tr>';
   }
 
   async function loadFeedback() {
