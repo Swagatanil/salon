@@ -79,3 +79,22 @@ Admin (header: `Authorization: Bearer <ADMIN_TOKEN>`):
 - Ek number se din mein 5 se zyada booking nahi (spam rokne ke liye).
 - Slot bhar jaane par 409 — double booking nahi hogi.
 - Feedback pehle pending rehta hai; aapke approve karne ke baad hi website par dikhta hai.
+
+
+## Online Payment (Razorpay)
+
+Online pay karne wale customer ko discount milta hai (default 10%, admin panel se badal sakte hain).
+
+1. [razorpay.com](https://razorpay.com) par account banayein aur KYC poori karein. Pehle **Test Mode** me try karein.
+2. Dashboard → Settings → API Keys se `Key ID` aur `Key Secret` nikalein.
+3. Terminal me:
+   ```
+   npx wrangler d1 execute naya-andaz-salon --remote --file=migration_add_payments.sql
+   npx wrangler secret put RAZORPAY_KEY_ID
+   npx wrangler secret put RAZORPAY_KEY_SECRET
+   npm run deploy
+   ```
+4. Admin panel me "Online Payment Discount" se % set karein.
+
+Local test ke liye `.dev.vars` me `RAZORPAY_KEY_ID=...` aur `RAZORPAY_KEY_SECRET=...` (test keys) daalein.
+Keys kabhi GitHub par push na karein. Secret sirf `wrangler secret put` se daalein.
