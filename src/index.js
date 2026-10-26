@@ -2,6 +2,60 @@ const JSON_HEADERS = { 'content-type': 'application/json; charset=utf-8' };
 
 const DEFAULT_SLOT_CAPACITY = 2;
 const MAX_BOOKINGS_PER_PHONE_PER_DAY = 5;
+const HOLD_MINUTES = 15; // online payment ke liye seat itni der roki jaati hai
+const MAX_ONLINE_DISCOUNT = 90;
+
+function paymentsConfigured(env) {
+  return Boolean(env.RAZORPAY_KEY_ID && env.RAZORPAY_KEY_SECRET);
+}
+
+function parseDiscount(value) {
+  const n = Number.parseInt(value ?? '10', 10);
+  if (!Number.isFinite(n)) return 10;
+  return Math.min(MAX_ONLINE_DISCOUNT, Math.max(0, n));
+}
+
+async function hmacSha256Hex(secret, message) {
+  const enc = new TextEncoder();
+  const key = await crypto.subtle.importKey('raw', enc.encode(secret), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
+  const sig = await crypto.subtle.sign('HMAC', key, enc.encode(message));
+  return [...new Uint8Array(sig)].map((b) => b.toString(16).padStart(2, '0')).join('');
+}
+
+function safeEqual(a, b) {
+  if (a.length !== b.length) return false;
+  let diff = 0;
+  for (let i = 0; i < a.length; i++) diff |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  return diff === 0;
+}
+
+async function createRazorpayOrder(env, amountPaise, receipt, notes) {
+  const res = await fetch('https://api.razorpay.com/v1/orders', {
+    method: 'POST',
+    headers: {
+      'content-type': 'application/json',
+      authorization: `Basic ${btoa(`${env.RAZORPAY_KEY_ID}:${env.RAZORPAY_KEY_SECRET}`)}`,
+    },
+    body: JSON.stringify({ amount: amountPaise, currency: 'INR', receipt, notes }),
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok || !data.id) throw new Error(data?.error?.description || 'Razorpay order nahi ban paaya.');
+  return data;
+}
+
+// Jin bookings ka payment 15 min me nahi hua, unki seat wapas khaali kar do.
+async function releaseUnpaidHolds(env) {
+  await env.DB.prepare(
+    `DELETE FROM bookings
+     WHERE status = 'awaiting_payment' AND payment_status = 'unpaid'
+       AND created_at < datetime('now', ?1)`
+  ).bind(`-${HOLD_MINUTES} minutes`).run();
+}
+
+async function settingsMap(env) {
+  const { results } = await env.DB.prepare('SELECT key, value FROM settings').all();
+  return Object.fromEntries(results.map((r) => [r.key, r.value]));
+}
 
 function json(data, status = 200, extraHeaders = {}) {
   return new Response(JSON.stringify(data), {
@@ -163,9 +217,12 @@ async function deleteImage(env, key) {
 }
 
 async function getSettings(env) {
-  const { results } = await env.DB.prepare('SELECT key, value FROM settings').all();
-  const map = Object.fromEntries(results.map((r) => [r.key, r.value]));
+  const map = await settingsMap(env);
+  const payEnabled = map.online_payment_enabled !== '0';
   return json({
+    online_payment_enabled: payEnabled,
+    online_payment_available: payEnabled && paymentsConfigured(env),
+    online_discount_percent: parseDiscount(map.online_discount_percent),
     notice_active: map.notice_active === '1',
     notice_text: map.notice_text ?? '',
     hero_image_key: map.hero_image_key ?? '',
@@ -184,6 +241,14 @@ async function updateSettings(request, env) {
   const updates = [];
   if ('notice_active' in body) updates.push(['notice_active', body.notice_active ? '1' : '0']);
   if ('notice_text' in body) updates.push(['notice_text', clean(body.notice_text, 300)]);
+  if ('online_discount_percent' in body) {
+    const n = Number.parseInt(body.online_discount_percent, 10);
+    if (!Number.isFinite(n) || n < 0 || n > MAX_ONLINE_DISCOUNT) {
+      return json({ error: `Discount 0 se ${MAX_ONLINE_DISCOUNT} ke beech hona chahiye.` }, 400);
+    }
+    updates.push(['online_discount_percent', String(n)]);
+  }
+  if ('online_payment_enabled' in body) updates.push(['online_payment_enabled', body.online_payment_enabled ? '1' : '0']);
   if ('hero_image_key' in body) updates.push(['hero_image_key', clean(body.hero_image_key, 200)]);
   if ('about_image_key' in body) updates.push(['about_image_key', clean(body.about_image_key, 200)]);
   if ('logo_image_key' in body) updates.push(['logo_image_key', clean(body.logo_image_key, 200)]);
@@ -279,6 +344,7 @@ async function availability(env, url) {
   if (!isValidDate(date)) return json({ error: 'Date galat hai (YYYY-MM-DD chahiye).' }, 400);
 
   const capacity = slotCapacity(env);
+  await releaseUnpaidHolds(env);
 
   if (isSunday(date)) {
     return json({ date, capacity, closed: true, slots: [] });
@@ -324,6 +390,9 @@ async function createBooking(request, env) {
   const note = clean(body.note, 300);
   const capacity = slotCapacity(env);
   const seatNumber = Number.parseInt(body.seat, 10);
+  const payMode = body.pay_mode === 'online' ? 'online' : 'salon';
+
+  await releaseUnpaidHolds(env);
 
   if (name.length < 2) return json({ error: 'Kripya apna poora naam likhein.' }, 400);
   if (!phone) return json({ error: 'Mobile number 10 ank ka hona chahiye.' }, 400);
@@ -333,6 +402,25 @@ async function createBooking(request, env) {
   if (date < todayInIndia()) return json({ error: 'Beeti hui date par booking nahi ho sakti.' }, 400);
   if (!Number.isInteger(seatNumber) || seatNumber < 1 || seatNumber > capacity) {
     return json({ error: 'Kripya ek seat chuniye.' }, 400);
+  }
+
+  let amountPaise = 0;
+  let originalPrice = 0;
+  let discountPercent = 0;
+  if (payMode === 'online') {
+    const map = await settingsMap(env);
+    if (map.online_payment_enabled === '0' || !paymentsConfigured(env)) {
+      return json({ error: 'Online payment abhi available nahi hai. Kripya "Salon par pay" chuniye.' }, 400);
+    }
+    // Price hamesha server se, customer ke bheje hue number se nahi.
+    const serviceName = service.split(' — ₹')[0].trim();
+    const row = await env.DB.prepare('SELECT price FROM services WHERE name = ?1 AND active = 1').bind(serviceName).first();
+    if (!row) return json({ error: 'Yeh service abhi available nahi hai.' }, 400);
+    originalPrice = row.price;
+    discountPercent = parseDiscount(map.online_discount_percent);
+    const payRupees = Math.round(originalPrice * (100 - discountPercent) / 100);
+    if (payRupees < 1) return json({ error: 'Is service ke liye online payment nahi ho sakta.' }, 400);
+    amountPaise = payRupees * 100;
   }
 
   const recent = await env.DB.prepare(
@@ -354,14 +442,45 @@ async function createBooking(request, env) {
   let inserted;
   try {
     inserted = await env.DB.prepare(
-      `INSERT INTO bookings (name, phone, service, booking_date, booking_time, seat_number, note)
-       VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7) RETURNING id, status, seat_number`
-    ).bind(name, phone, service, date, time, seatNumber, note).first();
+      `INSERT INTO bookings (name, phone, service, booking_date, booking_time, seat_number, note, status, payment_mode, amount_paise)
+       VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10) RETURNING id, status, seat_number`
+    ).bind(
+      name, phone, service, date, time, seatNumber, note,
+      payMode === 'online' ? 'awaiting_payment' : 'pending', payMode, amountPaise
+    ).first();
   } catch (error) {
     if (String(error).includes('UNIQUE')) {
       return json({ error: 'Yeh seat abhi-abhi book ho gayi! Kripya doosri seat chuniye.' }, 409);
     }
     throw error;
+  }
+
+  if (payMode === 'online') {
+    let order;
+    try {
+      order = await createRazorpayOrder(env, amountPaise, `booking_${inserted.id}`, { booking_id: String(inserted.id) });
+    } catch (error) {
+      await env.DB.prepare('DELETE FROM bookings WHERE id = ?1').bind(inserted.id).run();
+      return json({ error: 'Payment shuru nahi ho paaya. Thodi der baad koshish karein ya "Salon par pay" chuniye.' }, 502);
+    }
+    await env.DB.prepare('UPDATE bookings SET razorpay_order_id = ?1 WHERE id = ?2').bind(order.id, inserted.id).run();
+    return json({
+      id: inserted.id,
+      status: inserted.status,
+      seat: inserted.seat_number,
+      message: 'Seat aapke liye roki gayi hai. Payment poora karein.',
+      payment: {
+        key_id: env.RAZORPAY_KEY_ID,
+        order_id: order.id,
+        amount: amountPaise,
+        currency: 'INR',
+        name: 'Naya Andaz Salon',
+        description: service,
+        original_price: originalPrice,
+        discount_percent: discountPercent,
+        hold_minutes: HOLD_MINUTES,
+      },
+    }, 201);
   }
 
   return json({
@@ -370,6 +489,52 @@ async function createBooking(request, env) {
     seat: inserted.seat_number,
     message: 'Booking mil gayi! Hum jaldi confirm karenge.',
   }, 201);
+}
+
+async function verifyPayment(request, env) {
+  if (!paymentsConfigured(env)) return json({ error: 'Online payment set nahi hai.' }, 503);
+  const body = await readJson(request);
+  const bookingId = Number.parseInt(body?.booking_id, 10);
+  const orderId = clean(body?.razorpay_order_id, 100);
+  const paymentId = clean(body?.razorpay_payment_id, 100);
+  const signature = clean(body?.razorpay_signature, 200);
+  if (!Number.isInteger(bookingId) || !orderId || !paymentId || !signature) {
+    return json({ error: 'Payment ki details adhuri hain.' }, 400);
+  }
+
+  const expected = await hmacSha256Hex(env.RAZORPAY_KEY_SECRET, `${orderId}|${paymentId}`);
+  if (!safeEqual(expected, signature)) {
+    return json({ error: 'Payment verify nahi ho paaya.' }, 400);
+  }
+
+  const booking = await env.DB.prepare(
+    'SELECT id, seat_number, payment_status, razorpay_order_id FROM bookings WHERE id = ?1'
+  ).bind(bookingId).first();
+  if (!booking || booking.razorpay_order_id !== orderId) {
+    return json({ error: 'Payment ho gaya par booking nahi mili (time out). Kripya salon ko call karein aur yeh Payment ID dikhayein.' }, 409);
+  }
+  if (booking.payment_status === 'paid') {
+    return json({ id: booking.id, seat: booking.seat_number, message: 'Payment ho gaya! Booking confirm hai.' });
+  }
+
+  await env.DB.prepare(
+    `UPDATE bookings SET payment_status = 'paid', status = 'confirmed', razorpay_payment_id = ?1
+     WHERE id = ?2 AND razorpay_order_id = ?3`
+  ).bind(paymentId, bookingId, orderId).run();
+
+  return json({ id: booking.id, seat: booking.seat_number, message: 'Payment ho gaya! Aapki booking confirm hai.' });
+}
+
+async function cancelPaymentHold(request, env) {
+  const body = await readJson(request);
+  const bookingId = Number.parseInt(body?.booking_id, 10);
+  const orderId = clean(body?.razorpay_order_id, 100);
+  if (!Number.isInteger(bookingId) || !orderId) return json({ error: 'Details adhuri hain.' }, 400);
+  await env.DB.prepare(
+    `DELETE FROM bookings
+     WHERE id = ?1 AND razorpay_order_id = ?2 AND status = 'awaiting_payment' AND payment_status = 'unpaid'`
+  ).bind(bookingId, orderId).run();
+  return json({ ok: true });
 }
 
 async function createFeedback(request, env) {
@@ -494,6 +659,8 @@ async function handleApi(request, env, url) {
   if (method === 'GET' && path === '/api/gallery') return listGallery(env);
   if (method === 'POST' && path === '/api/bookings') return createBooking(request, env);
   if (method === 'POST' && path === '/api/feedback') return createFeedback(request, env);
+  if (method === 'POST' && path === '/api/payments/verify') return verifyPayment(request, env);
+  if (method === 'POST' && path === '/api/payments/cancel') return cancelPaymentHold(request, env);
 
   const imageMatch = path.match(/^\/api\/images\/(.+)$/);
   if (method === 'GET' && imageMatch) return serveImage(env, decodeURIComponent(imageMatch[1]));
